@@ -1,0 +1,13 @@
+package com.example.c001apk.compose.logic.database
+
+import androidx.room.Database
+import androidx.room.SkipQueryVerification
+import androidx.room.RoomDatabase
+import com.example.c001apk.compose.logic.dao.HomeMenuDao
+import com.example.c001apk.compose.logic.model.HomeMenu
+
+@SkipQueryVerification
+@Database(version = 1, entities = [HomeMenu::class])
+abstract class HomeMenuDatabase : RoomDatabase() {
+    abstract fun homeMenuDao(): HomeMenuDao
+}

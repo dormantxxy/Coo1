@@ -1,0 +1,85 @@
+syntax = "proto3";
+
+option java_package = "com.example.c001apk.compose";
+option java_multiple_files = true;
+
+message UserPreferences {
+  ThemeMode themeMode = 1;
+  bool materialYou = 2;
+  bool pureBlack = 3;
+  float fontScale = 4;
+  float contentScale = 5;
+  string szlmId = 6;
+  int32 imageQuality = 7;
+  bool imageFilter = 8;
+  bool openInBrowser = 9;
+  bool showSquare = 10;
+  bool recordHistory = 11;
+  bool showEmoji = 12;
+  bool checkUpdate = 13;
+  bool checkCount = 14;
+  string versionName = 15;
+  string apiVersion = 16;
+  string versionCode = 17;
+  string manufacturer = 18;
+  string brand = 19;
+  string model = 20;
+  string buildNumber = 21;
+  string sdkInt = 22;
+  string androidVersion = 23;
+  string userAgent = 24;
+  string xAppDevice = 25;
+  string xAppToken = 26;
+  bool isLogin = 27;
+  string userAvatar = 28;
+  string username = 29;
+  string level = 30;
+  string experience = 31;
+  string nextLevelExperience = 32;
+  string uid = 33;
+  string token = 34;
+  FollowType followType = 35;
+  string recentIds = 36;
+  int32 checkCountPeriod = 37;
+  string installTime = 38;
+  ThemeType themeType = 39;
+  string seedColor = 40;
+  int32 paletteStyle = 41;
+}
+
+enum ThemeType{
+  Default = 0;
+  Red = 1;
+  Pink = 2;
+  Purple = 3;
+  Indigo = 4;
+  Blue = 5;
+  LightBlue = 6;
+  Cyan = 7;
+  Teal = 8;
+  Green = 9;
+  LightGreen = 10;
+  Lime = 11;
+  Yellow = 12;
+  Amber = 13;
+  Orange = 14;
+  DeepOrange = 15;
+  Brown = 16;
+  BlueGrey = 17;
+  Sakura = 18;
+  Custom = 19;
+}
+
+enum FollowType{
+  ALL = 0;
+  USER = 1;
+  TOPIC = 2;
+  PRODUCT = 3;
+  APP = 4;
+}
+
+enum ThemeMode {
+  FOLLOW_SYSTEM = 0;
+  ALWAYS_ON = 1;
+  ALWAYS_OFF = 2;
+}

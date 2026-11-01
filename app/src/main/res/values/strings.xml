@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">酷安</string>
+    <string name="home">首页</string>
+    <string name="message">消息</string>
+    <string name="settings">设置</string>
+    <string name="about_source_code"><![CDATA[查看源码：%1$s]]></string>
+</resources>

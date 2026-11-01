@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>消息页六按钮 · iOS26 风格方案（10 组）</title>
+<style>
+  :root{
+    --bg:#f2f2f7; --card:#ffffff; --card2:#f7f7fa;
+    --label:#000; --label2:rgba(60,60,67,.6); --label3:rgba(60,60,67,.3);
+    --sep:rgba(60,60,67,.12);
+    --blue:#0a84ff; --green:#34c759; --orange:#ff9f0a; --pink:#ff375f; --purple:#bf5af2; --teal:#30b0c7;
+    --radius:22px;
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --bg:#000; --card:#1c1c1e; --card2:#2c2c2e;
+      --label:#fff; --label2:rgba(235,235,245,.6); --label3:rgba(235,235,245,.3);
+      --sep:rgba(84,84,88,.4);
+      --blue:#0a84ff; --green:#30d158; --orange:#ff9f0a; --pink:#ff375f; --purple:#da8fff; --teal:#40c8e0;
+    }
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  body{
+    margin:0;padding:0 0 60px;background:var(--bg);color:var(--label);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",sans-serif;
+    padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);
+  }
+  header{
+    position:sticky;top:0;z-index:10;padding:14px 20px 12px;
+    background:color-mix(in srgb,var(--bg) 88%,transparent);
+    backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+    border-bottom:.5px solid var(--sep);
+  }
+  header h1{margin:0;font-size:17px;font-weight:600;letter-spacing:-.2px}
+  header p{margin:3px 0 0;font-size:12.5px;color:var(--label2)}
+  .wrap{max-width:520px;margin:0 auto;padding:0 16px}
+  .sec{margin-top:22px}
+  .sec-title{display:flex;align-items:baseline;gap:8px;margin:0 4px 10px}
+  .sec-title b{font-size:15px;font-weight:600}
+  .sec-title span{font-size:12px;color:var(--label2)}
+
+  /* 通用图标块 */
+  .ic{width:44px;height:44px;border-radius:13px;display:flex;align-items:center;justify-content:center;flex:none}
+  .ic svg{width:22px;height:22px;stroke-width:2;fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+
+  /* ---------- 通用容器 ---------- */
+  .group{background:var(--card);border-radius:var(--radius);overflow:hidden}
+
+  /* ========== 方案 1：分组玻璃格子（渐变图标 + 白卡格） ========== */
+  .s1{display:grid;grid-template-columns:repeat(3,1fr)}
+  .s1 .cell{padding:16px 8px;display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;transition:background .15s}
+  .s1 .cell:active{background:var(--card2)}
+  .s1 .ic{border-radius:15px}
+  .s1 .t{font-size:12px;color:var(--label)}
+  .s1 .v{font-size:19px;font-weight:600;letter-spacing:-.3px}
+  .s1 .g-blue{background:linear-gradient(160deg,#5ac8fa,#0a84ff);color:#fff}
+  .s1 .g-green{background:linear-gradient(160deg,#5ee07a,#34c759);color:#fff}
+  .s1 .g-orange{background:linear-gradient(160deg,#ffc46b,#ff9f0a);color:#fff}
+  .s1 .g-pink{background:linear-gradient(160deg,#ff8fa8,#ff375f);color:#fff}
+  .s1 .g-purple{background:linear-gradient(160deg,#d6a4ff,#bf5af2);color:#fff}
+  .s1 .g-teal{background:linear-gradient(160deg,#6fd9ec,#30b0c7);color:#fff}
+
+  /* ========== 方案 2：分组列表行（左图标右文字，iOS 设置风） ========== */
+  .s2 .row{display:flex;align-items:center;gap:12px;padding:11px 16px;position:relative;transition:background .15s}
+  .s2 .row:active{background:var(--card2)}
+  .s2 .row+.row::before{content:"";position:absolute;left:60px;right:0;top:0;height:.5px;background:var(--sep)}
+  .s2 .ic{width:29px;height:29px;border-radius:8px}
+  .s2 .ic svg{width:17px;height:17px}
+  .s2 .t{flex:1;font-size:16px}
+  .s2 .chev{color:var(--label3);font-size:17px;line-height:1}
+
+  /* ========== 方案 3：圆角胶囊按钮网格（描边 + 按压填充） ========== */
+  .s3{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;background:transparent}
+  .s3 .pill{
+    background:var(--card);border-radius:18px;padding:14px 6px;
+    display:flex;flex-direction:column;align-items:center;gap:7px;
+    box-shadow:0 1px 2px rgba(0,0,0,.05);transition:transform .12s,background .15s
+  }
+  .s3 .pill:active{transform:scale(.95);background:var(--card2)}
+  .s3 .ic{width:36px;height:36px;border-radius:50%;background:color-mix(in srgb,var(--blue) 12%,transparent);color:var(--blue)}
+  .s3 .ic svg{width:19px;height:19px}
+  .s3 .t{font-size:11.5px;color:var(--label2)}
+
+  /* ========== 方案 4：玻璃浮层双行（毛玻璃背景 + 半透明块） ========== */
+  .s4{
+    padding:14px;border-radius:26px;
+    background:linear-gradient(140deg,rgba(10,132,255,.10),rgba(191,90,242,.10));
+    backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+    border:1px solid color-mix(in srgb,var(--label) 8%,transparent);
+  }
+  .s4 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .s4 .cell{
+    background:color-mix(in srgb,var(--card) 72%,transparent);
+    border:1px solid color-mix(in srgb,var(--label) 6%,transparent);
+    border-radius:16px;padding:13px 4px;display:flex;flex-direction:column;align-items:center;gap:6px;
+    transition:transform .12s
+  }
+  .s4 .cell:active{transform:scale(.94)}
+  .s4 .ic{width:34px;height:34px;border-radius:11px;color:#fff}
+  .s4 .ic svg{width:18px;height:18px}
+  .s4 .t{font-size:11px;color:var(--label2)}
+
+  /* ========== 方案 5：大图标横向滑动卡（每行 3 个 + 数值） ========== */
+  .s5 .rowbox{display:flex;gap:10px;padding:14px}
+  .s5 .card{
+    flex:1;background:var(--card2);border-radius:18px;padding:13px 10px;
+    display:flex;flex-direction:column;gap:9px;transition:transform .12s
+  }
+  .s5 .card:active{transform:scale(.96)}
+  .s5 .top{display:flex;align-items:center;justify-content:space-between}
+  .s5 .ic{width:30px;height:30px;border-radius:50%;background:color-mix(in srgb,currentColor 15%,transparent)}
+  .s5 .ic svg{width:16px;height:16px}
+  .s5 .n{font-size:20px;font-weight:600;letter-spacing:-.4px}
+  .s5 .t{font-size:11.5px;color:var(--label2)}
+
+  /* ========== 方案 6：玻璃胶囊 + 弹性按压（无图标底，纯文字胶囊） ========== */
+  .s6{padding:14px;display:flex;flex-wrap:wrap;gap:9px;background:var(--card);border-radius:var(--radius)}
+  .s6 .cap{
+    display:flex;align-items:center;gap:7px;
+    padding:9px 15px;border-radius:999px;
+    background:color-mix(in srgb,var(--label) 5%,transparent);
+    border:.5px solid color-mix(in srgb,var(--label) 8%,transparent);
+    transition:transform .12s,background .15s
+  }
+  .s6 .cap:active{transform:scale(.93);background:color-mix(in srgb,var(--label) 12%,transparent)}
+  .s6 .ic{width:20px;height:20px;border-radius:6px;background:transparent}
+  .s6 .ic svg{width:16px;height:16px}
+  .s6 .t{font-size:13.5px}
+
+  /* ========== 方案 7：卡片内分隔线（Apple 钱包风：左对齐图标 + 右箭头） ========== */
+  .s7{display:grid;grid-template-columns:1fr 1fr;background:transparent;gap:10px}
+  .s7 .card{
+    background:var(--card);border-radius:16px;padding:13px 14px;
+    display:flex;align-items:center;gap:10px;
+    box-shadow:0 1px 3px rgba(0,0,0,.06);transition:transform .12s
+  }
+  .s7 .card:active{transform:scale(.96)}
+  .s7 .ic{width:34px;height:34px;border-radius:10px;color:#fff}
+  .s7 .ic svg{width:18px;height:18px}
+  .s7 .t{font-size:13px;flex:1;line-height:1.25}
+
+  /* ========== 方案 8：分段控件风（整条一个胶囊，内部三段） ========== */
+  .s8{padding:12px;background:var(--card);border-radius:var(--radius);display:flex;flex-direction:column;gap:10px}
+  .s8 .seg{
+    display:flex;background:color-mix(in srgb,var(--label) 6%,transparent);
+    border-radius:13px;padding:3px;
+  }
+  .s8 .item{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:9px 4px;
+    border-radius:10px;transition:background .16s,transform .12s
+  }
+  .s8 .item:active{transform:scale(.95)}
+  .s8 .item.on{background:var(--card);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+  .s8 .ic{width:22px;height:22px;background:transparent}
+  .s8 .ic svg{width:17px;height:17px}
+  .s8 .t{font-size:10.5px;color:var(--label2)}
+
+  /* ========== 方案 9：六边形/圆形磁贴（圆形玻璃 + 文字在下） ========== */
+  .s9{display:grid;grid-template-columns:repeat(3,1fr);padding:16px 10px;background:var(--card);border-radius:var(--radius)}
+  .s9 .cell{display:flex;flex-direction:column;align-items:center;gap:7px;padding:9px 2px;transition:transform .12s}
+  .s9 .cell:active{transform:scale(.9)}
+  .s9 .circle{
+    width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    color:#fff;box-shadow:0 3px 10px color-mix(in srgb,currentColor 35%,transparent)
+  }
+  .s9 .circle svg{width:23px;height:23px}
+  .s9 .t{font-size:11.5px;color:var(--label)}
+
+  /* ========== 方案 10：极简描边格（无填充，仅细线分隔 + 悬浮高亮） ========== */
+  .s10{
+    display:grid;grid-template-columns:repeat(3,1fr);
+    background:var(--card);border-radius:var(--radius);overflow:hidden;
+    border:.5px solid var(--sep)
+  }
+  .s10 .cell{
+    padding:15px 6px;display:flex;flex-direction:column;align-items:center;gap:7px;
+    position:relative;transition:background .15s
+  }
+  .s10 .cell:active{background:color-mix(in srgb,var(--blue) 9%,transparent)}
+  .s10 .cell::after{content:"";position:absolute;right:0;top:14%;height:72%;width:.5px;background:var(--sep)}
+  .s10 .cell:nth-child(3n)::after{display:none}
+  .s10 .cell:nth-child(n+4){border-top:.5px solid var(--sep)}
+  .s10 .ic{width:26px;height:26px;background:transparent}
+  .s10 .ic svg{width:22px;height:22px}
+  .s10 .t{font-size:11.5px;color:var(--label2)}
+
+  /* 颜色类 */
+  .c-blue{color:var(--blue)} .c-green{color:var(--green)} .c-orange{color:var(--orange)}
+  .c-pink{color:var(--pink)} .c-purple{color:var(--purple)} .c-teal{color:var(--teal)}
+  .bg-blue{background:var(--blue)} .bg-green{background:var(--green)} .bg-orange{background:var(--orange)}
+  .bg-pink{background:var(--pink)} .bg-purple{background:var(--purple)} .bg-teal{background:var(--teal)}
+
+  footer{max-width:520px;margin:34px auto 0;padding:0 20px;font-size:12px;color:var(--label3);text-align:center}
+</style>
+</head>
+<body>
+<header>
+  <h1>消息页 · 六个入口按钮</h1>
+  <p>iOS 26 风格候选（10 组）— 本地收藏 / 浏览历史 / 我的常去 / 我的收藏 / 我的赞 / 我的回复</p>
+</header>
+
+<div class="wrap">
+
+<!-- ============ 1 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 1</b><span>渐变图标格（App Store 风）</span></div>
+  <div class="group s1">
+    <div class="cell"><div class="ic g-blue"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/><path d="M9 12h6"/></svg></div><div class="t">本地收藏</div></div>
+    <div class="cell"><div class="ic g-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+    <div class="cell"><div class="ic g-orange"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/><circle cx="12" cy="10" r="2.4"/></svg></div><div class="t">我的常去</div></div>
+    <div class="cell"><div class="ic g-purple"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+    <div class="cell"><div class="ic g-pink"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+    <div class="cell"><div class="ic g-teal"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+  </div>
+</section>
+
+<!-- ============ 2 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 2</b><span>设置列表行（左图标 + 右箭头）</span></div>
+  <div class="group s2">
+    <div class="row"><div class="ic bg-blue"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div><div class="chev">›</div></div>
+    <div class="row"><div class="ic bg-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div><div class="chev">›</div></div>
+    <div class="row"><div class="ic bg-orange"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div><div class="chev">›</div></div>
+    <div class="row"><div class="ic bg-purple"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div><div class="chev">›</div></div>
+    <div class="row"><div class="ic bg-pink"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div><div class="chev">›</div></div>
+    <div class="row"><div class="ic bg-teal"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div><div class="chev">›</div></div>
+  </div>
+</section>
+
+<!-- ============ 3 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 3</b><span>独立圆角胶囊（按压缩放）</span></div>
+  <div class="s3">
+    <div class="pill"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div></div>
+    <div class="pill"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+    <div class="pill"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div></div>
+    <div class="pill"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+    <div class="pill"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+    <div class="pill"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+  </div>
+</section>
+
+<!-- ============ 4 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 4</b><span>玻璃浮层（毛玻璃 + 半透块）</span></div>
+  <div class="s4">
+    <div class="grid">
+      <div class="cell"><div class="ic bg-blue"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div></div>
+      <div class="cell"><div class="ic bg-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+      <div class="cell"><div class="ic bg-orange"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div></div>
+      <div class="cell"><div class="ic bg-purple"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+      <div class="cell"><div class="ic bg-pink"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+      <div class="cell"><div class="ic bg-teal"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 5 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 5</b><span>数据卡（图标 + 数量）</span></div>
+  <div class="group s5">
+    <div class="rowbox">
+      <div class="card c-blue"><div class="top"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div></div><div class="n">128</div><div class="t">本地收藏</div></div>
+      <div class="card c-green"><div class="top"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div></div><div class="n">342</div><div class="t">浏览历史</div></div>
+      <div class="card c-orange"><div class="top"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div></div><div class="n">56</div><div class="t">我的常去</div></div>
+    </div>
+    <div class="rowbox" style="padding-top:0">
+      <div class="card c-purple"><div class="top"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div></div><div class="n">24</div><div class="t">我的收藏</div></div>
+      <div class="card c-pink"><div class="top"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div></div><div class="n">1.2k</div><div class="t">我的赞</div></div>
+      <div class="card c-teal"><div class="top"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div></div><div class="n">87</div><div class="t">我的回复</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 6 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 6</b><span>玻璃文字胶囊（弹性按压）</span></div>
+  <div class="s6">
+    <div class="cap c-blue"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div></div>
+    <div class="cap c-green"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+    <div class="cap c-orange"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div></div>
+    <div class="cap c-purple"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+    <div class="cap c-pink"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+    <div class="cap c-teal"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+  </div>
+</section>
+
+<!-- ============ 7 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 7</b><span>两列卡片（钱包风）</span></div>
+  <div class="s7">
+    <div class="card"><div class="ic bg-blue"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地<br>收藏</div></div>
+    <div class="card"><div class="ic bg-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览<br>历史</div></div>
+    <div class="card"><div class="ic bg-orange"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的<br>常去</div></div>
+    <div class="card"><div class="ic bg-purple"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的<br>收藏</div></div>
+    <div class="card"><div class="ic bg-pink"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的<br>赞</div></div>
+    <div class="card"><div class="ic bg-teal"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的<br>回复</div></div>
+  </div>
+</section>
+
+<!-- ============ 8 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 8</b><span>分段控件（整条胶囊）</span></div>
+  <div class="s8">
+    <div class="seg">
+      <div class="item on c-blue"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div></div>
+      <div class="item c-green"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+      <div class="item c-orange"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div></div>
+    </div>
+    <div class="seg">
+      <div class="item c-purple"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+      <div class="item c-pink"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+      <div class="item c-teal"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 9 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 9</b><span>大圆图标磁贴（带投影）</span></div>
+  <div class="s9">
+    <div class="cell"><div class="circle bg-blue"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div></div>
+    <div class="cell"><div class="circle bg-green"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+    <div class="cell"><div class="circle bg-orange"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div></div>
+    <div class="cell"><div class="circle bg-purple"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+    <div class="cell"><div class="circle bg-pink"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+    <div class="cell"><div class="circle bg-teal"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+  </div>
+</section>
+
+<!-- ============ 10 ============ -->
+<section class="sec">
+  <div class="sec-title"><b>方案 10</b><span>极简描边网格（细线分隔）</span></div>
+  <div class="s10">
+    <div class="cell c-blue"><div class="ic"><svg viewBox="0 0 24 24"><path d="M4 7h16v13H4z"/><path d="M4 7l2-3h12l2 3"/></svg></div><div class="t">本地收藏</div></div>
+    <div class="cell c-green"><div class="ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></div><div class="t">浏览历史</div></div>
+    <div class="cell c-orange"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.2 7-11a7 7 0 10-14 0c0 5.8 7 11 7 11z"/></svg></div><div class="t">我的常去</div></div>
+    <div class="cell c-purple"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8L3.6 9.7l5.8-.8z"/></svg></div><div class="t">我的收藏</div></div>
+    <div class="cell c-pink"><div class="ic"><svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-9.4A4.1 4.1 0 0112 8a4.1 4.1 0 017 2.6c0 5-7 9.4-7 9.4z"/></svg></div><div class="t">我的赞</div></div>
+    <div class="cell c-teal"><div class="ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 10-3.2 6.4L20 19l-.6-3.2A8 8 0 0020 12z"/></svg></div><div class="t">我的回复</div></div>
+  </div>
+</section>
+
+</div>
+
+<footer>长按/点击各方案可看按压反馈 · 支持深浅色自动切换</footer>
+</body>
+</html>

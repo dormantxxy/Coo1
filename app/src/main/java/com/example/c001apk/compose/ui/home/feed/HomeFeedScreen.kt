@@ -1,0 +1,128 @@
+package com.example.c001apk.compose.ui.home.feed
+
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.platform.LocalContext
+import androidx.hilt.navigation.compose.hiltViewModel
+import com.example.c001apk.compose.FollowType
+import com.example.c001apk.compose.constant.Constants.EMPTY_STRING
+import com.example.c001apk.compose.logic.providable.LocalUserPreferences
+import com.example.c001apk.compose.ui.collection.CollectionPickDialog
+import com.example.c001apk.compose.ui.collection.CollectionPickViewModel
+import com.example.c001apk.compose.ui.component.CommonScreen
+import com.example.c001apk.compose.ui.home.TabType
+import com.example.c001apk.compose.util.ReportType
+import com.example.c001apk.compose.util.makeToast
+
+/**
+ * Created by bggRGjQaUbCoE on 2024/6/2
+ */
+@Composable
+fun HomeFeedScreen(
+    refreshState: Boolean,
+    resetRefreshState: () -> Unit,
+    type: TabType,
+    onViewUser: (String) -> Unit,
+    onViewFeed: (String, Boolean) -> Unit,
+    onOpenLink: (String, String?) -> Unit,
+    onCopyText: (String?) -> Unit,
+    onReport: (String, ReportType) -> Unit,
+    isScrollingUp: ((Boolean) -> Unit)? = null,
+) {
+
+    val context = LocalContext.current
+    val prefs = LocalUserPreferences.current
+
+    val dataListUrl: String? = if (type == TabType.FOLLOW)
+        when (prefs.followType) {
+            FollowType.ALL -> "/page?url=V9_HOME_TAB_FOLLOW"
+            FollowType.USER -> "/page?url=V9_HOME_TAB_FOLLOW&type=circle"
+            FollowType.TOPIC -> "/page?url=V9_HOME_TAB_FOLLOW&type=topic"
+            FollowType.PRODUCT -> "/page?url=V9_HOME_TAB_FOLLOW&type=product"
+            FollowType.APP -> "/page?url=V9_HOME_TAB_FOLLOW&type=apk"
+            FollowType.UNRECOGNIZED -> EMPTY_STRING
+        }
+    else null
+
+    val dataListTitle: String? = if (type == TabType.FOLLOW)
+        when (prefs.followType) {
+            FollowType.ALL -> "全部关注"
+            FollowType.USER -> "好友关注"
+            FollowType.TOPIC -> "话题关注"
+            FollowType.PRODUCT -> "数码关注"
+            FollowType.APP -> "应用关注"
+            FollowType.UNRECOGNIZED -> EMPTY_STRING
+        }
+    else null
+
+    val viewModel =
+        hiltViewModel<HomeFeedViewModel, HomeFeedViewModel.ViewModelFactory>(key = type.name) { factory ->
+            factory.create(
+                type = type,
+                dataListUrl = when (type) {
+                    TabType.FOLLOW -> dataListUrl ?: EMPTY_STRING
+                    TabType.HOT -> "/page?url=V9_HOME_TAB_RANKING"
+                    TabType.COOLPIC -> "/page?url=V11_FIND_COOLPIC"
+                    else -> EMPTY_STRING
+                },
+                dataListTitle = when (type) {
+                    TabType.FOLLOW -> dataListTitle ?: EMPTY_STRING
+                    TabType.HOT -> "热榜"
+                    TabType.COOLPIC -> "酷图"
+                    else -> EMPTY_STRING
+                },
+                installTime = prefs.installTime
+            )
+        }
+
+    LaunchedEffect(prefs.followType) {
+        if (type == TabType.FOLLOW) {
+            viewModel.dataListUrl = dataListUrl ?: EMPTY_STRING
+            viewModel.dataListTitle = dataListTitle ?: EMPTY_STRING
+        }
+    }
+
+    val pickViewModel = hiltViewModel<CollectionPickViewModel>()
+    var collectTarget by remember { mutableStateOf<String?>(null) }
+
+    CommonScreen(
+        viewModel = viewModel,
+        refreshState = refreshState,
+        resetRefreshState = resetRefreshState,
+        onViewUser = onViewUser,
+        onViewFeed = onViewFeed,
+        onOpenLink = onOpenLink,
+        onCopyText = onCopyText,
+        onReport = onReport,
+        // 点击收藏：只有 1 个收藏单直接保存，多个弹窗；已收藏则移除
+        onCollect = { feedId, want ->
+            pickViewModel.quickFavorite(feedId, want) { needPick, _, msg ->
+                if (needPick) collectTarget = feedId
+                if (msg.isNotEmpty()) context.makeToast(msg)
+            }
+        },
+        // 长按收藏：弹窗选择
+        onCollectPick = { feedId ->
+            collectTarget = feedId
+        },
+        isScrollingUp = isScrollingUp,
+    )
+
+    viewModel.toastText?.let {
+        viewModel.resetToastText()
+        context.makeToast(it)
+    }
+
+    collectTarget?.let { feedId ->
+        CollectionPickDialog(
+            targetId = feedId,
+            onDismiss = { collectTarget = null },
+            // 保存到收藏单成功后自动关闭弹窗
+            onCollected = { collectTarget = null },
+        )
+    }
+}

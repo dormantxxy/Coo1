@@ -1,0 +1,322 @@
+====================================================================
+液态玻璃底栏 + 气泡 适配文档（可直接复制到其他项目）
+====================================================================
+适用库：liquidglass-2.0.11.aar（QWEA0/Liquid-Glass-Android）
+本项目中对应文件：
+  app/libs/liquidglass-2.0.11.aar
+  app/src/main/java/com/example/c001apk/compose/ui/main/LiquidGlassBottomBar.kt
+当前效果对应版本：v14（底栏模糊 24f，气泡无边框 + 浅色蓝色玻璃）
+
+--------------------------------------------------------------------
+一、接入准备
+--------------------------------------------------------------------
+1. 把 liquidglass-2.0.11.aar 放到 app/libs/
+
+2. app/build.gradle.kts 增加依赖：
+   dependencies {
+       implementation(files("libs/liquidglass-2.0.11.aar"))
+   }
+
+3. app/proguard-rules.pro 增加（R8 必须，否则底栏类会被裁掉）：
+   -keep class com.example.liquidglass.** { *; }
+
+4. minSdk 24 即可；Android 12+ 会自动走硬件模糊（RenderEffect）。
+
+--------------------------------------------------------------------
+二、整体结构（非常重要，决定有没有残影/能不能折射）
+--------------------------------------------------------------------
+错误做法：把底栏放在内容布局里面，或者 backdropSource 指向整棵 decorView。
+正确做法：
+
+  decorView
+   ├── android.R.id.content（页面内容，顶栏 + 列表）
+   └── wrap（FrameLayout，后加，覆盖在内容上方）
+        ├── LiquidGlassTabBar（固定宽高，底部居中）
+        └── badge TextView（可选，未读红点）
+
+关键点：
+  · 底栏必须是 content 的兄弟节点，不能是它的子节点；
+  · backdropSource 必须指向 content 根（不含底栏自己），
+    否则模糊会拍到自己 → 递归/残影；
+  · 不要 bringToFront 底栏内部的 tabsRow，
+    库会把气泡画在 row 上方，气泡才能折射到图标和文字。
+
+尺寸与位置（与 PanNative/C001 一致）：
+  · 宽 = 屏宽 × 0.75（左右各 12.5%）
+  · 高 = 64dp
+  · 底部 margin = 12dp + 导航栏 inset
+  · 圆角 31dp
+
+--------------------------------------------------------------------
+三、底栏参数（最终可用值）
+--------------------------------------------------------------------
+val tabBar = LiquidGlassTabBar(activity).apply {
+    enableBackdropBlur = true          // 开实时背景模糊
+    blurAmount = 24f                   // 24 是性能/观感平衡点；40 更奶但更重
+    highQualityBlur = true             // 高质量多趟采样；低端机可改 false
+    useHardwareBlurWhenPossible = true // Android 12+ 走 GPU
+    enableDynamicBackground = true     // ★ 核心：每帧重捕获，否则会残留旧画面
+    enableChromaticDispersion = false
+    enableChromaticAberration = false
+    enableEdgeHighlight = true
+    enableShadow = false               // 库自带阴影有方形直角，关掉
+    enableAdaptiveTint = false
+
+    // ★ 不要设置 enableOptimizedCapture！
+    //   它是抽帧缓存，滚动/拖动时会复用旧帧 → 残影、不实时。
+
+    // 圆角
+    val r31 = 31f * density
+    cornerRadiusTopLeft = r31
+    cornerRadiusTopRight = r31
+    cornerRadiusBottomLeft = r31
+    cornerRadiusBottomRight = r31
+
+    // 选中色必须在 setTabs 之前设置，否则库内部会先用默认色
+    selectedTintColor = 0xFF4F7CFF.toInt()
+
+    setTabs(
+        list.map {
+            LiquidGlassTabBar.TabItem(it.title, it.iconDrawable)
+        }
+    )
+    selectedIndex = 初始下标
+
+    // 背景源 = 页面内容根（不要包含底栏）
+    backdropSource = contentRoot
+
+    onTabSelected = { index -> onSelected(index) }
+}
+
+// 外圈轮廓（浅色页面也能看清）
+foreground = GradientDrawable().apply {
+    shape = GradientDrawable.RECTANGLE
+    cornerRadius = r31
+    setColor(Color.TRANSPARENT)
+    setStroke(1dp, if (night) 0x408E8E93 else 0x3D8E8E93) // 半透明灰，不要纯黑
+}
+outlineProvider = object : ViewOutlineProvider() {
+    override fun getOutline(v: View, outline: Outline) {
+        outline.setRoundRect(0, 0, v.width, v.height, r31)
+    }
+}
+clipToOutline = true   // 按圆角真正裁剪，消除下方直角
+// 不要用 elevation：方形阴影会露出两个直角
+
+--------------------------------------------------------------------
+四、图标 / 文字样式（在 layout 之后调）
+--------------------------------------------------------------------
+底栏内部结构：LinearLayout(row) 里每个格子是 LinearLayout(cell)：
+  cell[0] = ImageView(icon)
+  cell[1] = TextView(label)
+
+private fun tuneTabBar(tabBar: LiquidGlassTabBar, tabs: List<Tab>, selected: Int) {
+    val row = (0 until tabBar.childCount)
+        .map { tabBar.getChildAt(it) }
+        .firstOrNull { it is LinearLayout && it.childCount == tabs.size }
+        as? LinearLayout ?: return
+
+    (row.layoutParams as? FrameLayout.LayoutParams)?.gravity =
+        Gravity.LEFT or Gravity.CENTER_VERTICAL
+    // ★ 不要 bringToFront：让气泡保持在图标/文字之上
+
+    for (i in 0 until row.childCount) {
+        val cell = row.getChildAt(i) as? LinearLayout ?: continue
+        cell.gravity = Gravity.CENTER
+        cell.setPadding(0, 4dp, 0, 4dp)
+
+        val icon = cell.getChildAt(0) as? ImageView
+        icon?.let {
+            (it.layoutParams as? LinearLayout.LayoutParams)?.apply {
+                width = 23dp
+                height = 23dp
+                it.layoutParams = this
+            }
+            it.imageTintList = ColorStateList.valueOf(
+                if (i == selected) 0xFF4F7CFF else 0xFF9AA8BB
+            )
+            it.alpha = 1f
+            it.colorFilter = null
+            it.setImageDrawable(
+                if (i == selected) tabs[i].selectedIcon else tabs[i].unselectedIcon
+            )
+        }
+
+        val label = cell.getChildAt(1) as? TextView
+        label?.let {
+            it.setTextSize(TypedValue.COMPLEX_UNIT_PX, 11f * density)
+            it.gravity = Gravity.CENTER
+            it.includeFontPadding = false
+            (it.layoutParams as? LinearLayout.LayoutParams)?.apply {
+                topMargin = 3dp
+                it.layoutParams = this
+            }
+            it.setTextColor(if (i == selected) 0xFF4F7CFF else 0xFF9AA8BB)
+        }
+    }
+
+    applyDroplet(tabBar, row)
+}
+
+--------------------------------------------------------------------
+五、气泡（核心）
+--------------------------------------------------------------------
+private fun applyDroplet(tabBar: LiquidGlassTabBar, row: LinearLayout?) {
+    for (i in 0 until tabBar.childCount) {
+        val v = tabBar.getChildAt(i)
+        if (v !is LiquidGlassView) continue
+
+        val r26 = 26f * density
+        v.cornerRadiusTopLeft = r26
+        v.cornerRadiusTopRight = r26
+        v.cornerRadiusBottomLeft = r26
+        v.cornerRadiusBottomRight = r26
+        v.translationY = 0f
+        v.enableShadow = false
+        v.useHardwareBlurWhenPossible = true
+        v.blurAmount = 40f          // 气泡面积小，可以比底栏更糊
+        v.highQualityBlur = true
+
+        // ★ 气泡的 backdropSource = tabsRow
+        //   这样气泡滑过时，折射的是「图标 + 标题」，不是页面内容
+        if (row != null) v.backdropSource = row
+
+        // 浅色页面可见性：不加边框，用很淡的蓝色玻璃
+        // 浅色 8% 蓝 / 深色 10% 白
+        v.glassTint = if (night) 0x1AFFFFFF else 0x144F7CFF
+
+        // ★ 气泡尺寸（库每次 onLayout 都会重置，必须用 layout 回调反复纠正）
+        if (首次) {
+            v.addOnLayoutChangeListener { view, _, _, _, _, _, _, _, _ ->
+                fixDropletScale(view as LiquidGlassView)
+            }
+        }
+        fixDropletScale(v)
+    }
+}
+
+private fun fixDropletScale(v: LiquidGlassView) {
+    if (v.width <= 0 || v.height <= 0) return
+    v.pivotX = v.width / 2f
+    v.pivotY = v.height / 2f
+    v.scaleX = 0.82f   // 宽 82%
+    v.scaleY = 0.68f   // 高 68%（库内部会重置，所以必须反复设）
+}
+
+为什么是 0.82 / 0.68：
+  · 库的 droplet 默认和整个 cell 一样大，直接显示会太满；
+  · 缩到 82% × 68% 后是悬浮小胶囊，视觉最接近 iOS 26；
+  · 千万别只改 scaleX 不改 scaleY（会看起来被压扁）。
+
+--------------------------------------------------------------------
+六、生命周期与刷新时机
+--------------------------------------------------------------------
+1. 添加：
+   decor.addView(wrap, FrameLayout.LayoutParams(width75%, 64dp, BOTTOM|CENTER))
+   ViewCompat.setOnApplyWindowInsetsListener(wrap) { ... 更新 bottomMargin ... }
+
+2. 启动后连续校正几次（库初始化会重置样式）：
+   repeat(4) { i -> wrap.postDelayed({ tuneTabBar(...) }, 80L * i) }
+
+3. 选中项变化时：
+   tabBar.selectedIndex = index
+   tabBar.post { tuneTabBar(...) }
+
+4. 从后台/弹窗回来：
+   onWindowFocusChanged / onResume 里 tabBar.post { tuneTabBar(...) }
+
+5. onDispose / onDestroy：
+   removeCallbacks、清 insets listener、从 parent 移除 wrap。
+
+--------------------------------------------------------------------
+七、常见问题对照表
+--------------------------------------------------------------------
+现象：拖动/滚动后有残影、旧画面
+原因：enableDynamicBackground 关了，或设置了 enableOptimizedCapture
+解决：enableDynamicBackground = true；不要设置 enableOptimizedCapture
+
+现象：气泡是扁的 / 变窄
+原因：只改了 scaleX；或 scale 被库的 syncDroplet 重置
+解决：scaleX 0.82 + scaleY 0.68，并且用 addOnLayoutChangeListener 反复设
+
+现象：气泡在白色页面看不见
+原因：气泡是纯白玻璃，和白色底栏没有对比
+解决：浅色模式 glassTint = 0x144F7CFF（8% 蓝），不要加黑边
+
+现象：底栏在白色页面看不见
+原因：没有任何轮廓
+解决：foreground 加 1dp 半透明灰描边 + clipToOutline（不要 elevation）
+
+现象：底栏下方有两个直角
+原因：用了 elevation 阴影，阴影轮廓是方形
+解决：去掉 elevation；设置 outlineProvider + clipToOutline
+
+现象：气泡里折射不到图标/标题
+原因：气泡 backdropSource 指向 contentRoot，或者 row 被 bringToFront
+解决：气泡 backdropSource = tabsRow；不要 bringToFront
+
+现象：底栏模糊很卡
+原因：blurAmount 大 + highQuality + 每帧重捕获
+解决：blurAmount 24f（底栏）/ 40f（气泡），highQuality 可按机型关；
+      不要关 enableDynamicBackground（关了就会有残影）
+
+现象：底栏把列表点击挡住了
+原因：wrap 设置了可点击或高度过大
+解决：wrap.isClickable = false；高度只包住底栏；列表底部留 120dp padding
+
+--------------------------------------------------------------------
+八、最小可复用调用示例（其他项目直接抄）
+--------------------------------------------------------------------
+fun setupGlassBar(
+    activity: Activity,
+    contentRoot: ViewGroup,     // 通常是 android.R.id.content
+    tabs: List<TabSpec>,        // title + 普通图标 + 选中图标
+    initialIndex: Int,
+    onSelected: (Int) -> Unit,
+): View {
+    val density = activity.resources.displayMetrics.density
+    val tabBar = LiquidGlassTabBar(activity).apply {
+        enableBackdropBlur = true
+        blurAmount = 24f
+        highQualityBlur = true
+        useHardwareBlurWhenPossible = true
+        enableDynamicBackground = true
+        enableChromaticDispersion = false
+        enableChromaticAberration = false
+        enableEdgeHighlight = true
+        enableShadow = false
+        enableAdaptiveTint = false
+        // 不设置 enableOptimizedCapture
+        val r31 = 31f * density
+        cornerRadiusTopLeft = r31
+        cornerRadiusTopRight = r31
+        cornerRadiusBottomLeft = r31
+        cornerRadiusBottomRight = r31
+        selectedTintColor = 0xFF4F7CFF.toInt()
+        setTabs(tabs.map { LiquidGlassTabBar.TabItem(it.title, it.icon) })
+        selectedIndex = initialIndex
+        backdropSource = contentRoot
+        onTabSelected = onSelected
+    }
+
+    val wrap = FrameLayout(activity).apply {
+        isClickable = false
+        isFocusable = false
+    }
+    wrap.addView(tabBar, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+
+    val lp = FrameLayout.LayoutParams(
+        (activity.resources.displayMetrics.widthPixels * 0.75f).toInt(),
+        (64 * density).toInt(),
+        Gravity.BOTTOM or Gravity.CENTER_HORIZONTAL
+    )
+    (activity.window.decorView as ViewGroup).addView(wrap, lp)
+
+    wrap.post { tuneTabBar(tabBar, tabs, initialIndex) }
+    repeat(4) { i -> wrap.postDelayed({ tuneTabBar(tabBar, tabs, initialIndex) }, 80L * i) }
+    return wrap
+}
+
+====================================================================
+完
+====================================================================

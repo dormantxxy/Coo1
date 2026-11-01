@@ -1,0 +1,28 @@
+*.iml
+.gradle
+/.idea/caches
+/.idea/libraries
+/.idea/modules.xml
+/.idea/workspace.xml
+/.idea/navEditor.xml
+/.idea/assetWizardSettings.xml
+.DS_Store
+/build
+/captures
+.externalNativeBuild
+.cxx
+local.properties
+*.log
+.idea
+.kotlin
+
+# 本地大体积目录（不上传）
+/.mobicode
+/备份
+/安装包
+
+# 各模块构建产物
+/app/build
+/mojito/build
+/SketchImageViewLoader/build
+/buildSrc/build
