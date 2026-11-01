@@ -12,11 +12,6 @@ concurrency:
 permissions:
   contents: read
 
-env:
-  # 固定 SDK 路径，避免 “SDK location not found”
-  ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
-  ANDROID_HOME: /usr/local/lib/android/sdk
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,23 +32,24 @@ jobs:
           cache-read-only: false
           gradle-home-cache-cleanup: true
 
-      #  runner 镜像自带 SDK；这里只补 cmdline-tools 并确保可用
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-
-      #  关键：安装工程需要的平台与构建工具（compileSdk=35），并接受 license
-      - name: Install required SDK packages
+      # 直接复用 runner 预装的 Android SDK，不用 setup-android action（那步 sdkmanager --licenses 会失败）
+      - name: Prepare Android SDK
+        shell: bash
         run: |
-          set -e
-          SDK="${ANDROID_SDK_ROOT}"
-          if [ -d "/usr/local/lib/android/sdk" ]; then SDK="/usr/local/lib/android/sdk"; fi
+          SDK="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "SDK=$SDK"
           export ANDROID_SDK_ROOT="$SDK"
           export ANDROID_HOME="$SDK"
-          echo "Using SDK: $SDK"
-          yes 2>/dev/null | sdkmanager --sdk_root="$SDK" --licenses > /dev/null 2>&1 || true
-          sdkmanager --sdk_root="$SDK" "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null
+          # 写 local.properties，避免 “SDK location not found”
           echo "sdk.dir=$SDK" > local.properties
           cat local.properties
+          # 接受 license（失败不阻断后续）
+          SDKMANAGER="$(command -v sdkmanager || echo "$SDK/cmdline-tools/latest/bin/sdkmanager")"
+          echo "sdkmanager=$SDKMANAGER"
+          yes 2>/dev/null | "$SDKMANAGER" --licenses > /dev/null 2>&1 || true
+          # 安装 compileSdk=35 所需包（已存在则跳过）
+          "$SDKMANAGER" "platform-tools" "platforms;android-35" "build-tools;35.0.0" > /dev/null 2>&1 || true
+          ls "$SDK/platforms" "$SDK/build-tools" || true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
