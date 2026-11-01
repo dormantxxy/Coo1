@@ -10,7 +10,8 @@ concurrency:
   cancel-in-progress: true
 
 permissions:
-  contents: read
+  # 需要 write 才能创建 Release 并上传 APK 资产
+  contents: write
 
 jobs:
   build:
@@ -61,12 +62,30 @@ jobs:
           --build-cache
           --stacktrace
 
-      - name: Upload APK
+      - name: Upload APK (Actions artifact)
         uses: actions/upload-artifact@v4
         with:
           name: Coo1-apk
           path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
+
+      # 永久保存：自动发布到 Releases，固定下载链接、不过期
+      - name: Publish Release (permanent)
+        if: success()
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: Coo1 ${{ github.run_number }}
+          body: |
+            自动构建产物（永久保存）
+            - commit: ${{ github.sha }}
+            - run: ${{ github.run_id }}
+          files: app/build/outputs/apk/release/*.apk
+          make_latest: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload build reports on failure
         if: failure()
